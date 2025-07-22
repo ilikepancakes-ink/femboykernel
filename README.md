@@ -1,6 +1,6 @@
-# FemboyKernel - x64 System Diagnostic Kernel
+# FemboyOS 
 
-A comprehensive x64 kernel written from scratch in assembly language with advanced hardware management and diagnostic capabilities.
+A OS written from scratch in assembly language with advanced hardware management and diagnostic capabilities.
 
 ## Project Structure
 
