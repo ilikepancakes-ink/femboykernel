@@ -4,8 +4,8 @@ ENTRY(_start)
 
 SECTIONS
 {
-    /* Kernel starts at 1MB */
-    . = 0x100000;
+    /* Kernel starts at 32KB */
+    . = 0x8000;
     
     /* Text section (code) */
     .text ALIGN(4K) : {

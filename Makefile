@@ -69,9 +69,9 @@ $(BUILD_DIR)/vga.o: $(DRIVERS_DIR)/vga.asm | $(BUILD_DIR)
 $(BUILD_DIR)/gdt.o: $(BOOT_DIR)/gdt.asm | $(BUILD_DIR)
 	$(ASM) $(ASM_FLAGS) -o $@ $<
 
-# Link kernel
-$(BUILD_DIR)/kernel.bin: $(ALL_OBJECTS) $(SCRIPTS_DIR)/kernel.ld | $(BUILD_DIR)
-	$(LD) $(LD_FLAGS) -o $@ $(ALL_OBJECTS)
+# Create raw kernel binary (no linking)
+$(BUILD_DIR)/kernel.bin: $(KERNEL_DIR)/main.asm | $(BUILD_DIR)
+	nasm -f bin -o $@ $<
 
 # Create disk image
 $(BUILD_DIR)/femboykernel.img: $(BUILD_DIR)/boot.bin $(BUILD_DIR)/kernel.bin | $(BUILD_DIR)

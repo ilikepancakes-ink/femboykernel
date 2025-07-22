@@ -27,7 +27,7 @@ start:
     call print_string
     
     mov ah, 0x02        ; Read sectors
-    mov al, 64          ; Number of sectors to read
+    mov al, 8           ; Number of sectors to read (4KB should be enough)
     mov ch, 0           ; Cylinder
     mov cl, 2           ; Starting sector (sector 1 is boot sector)
     mov dh, 0           ; Head
@@ -48,6 +48,8 @@ start:
     lgdt [gdt_descriptor]
     
     ; Enter protected mode
+    mov si, mode_msg
+    call print_string
     mov eax, cr0
     or eax, 1
     mov cr0, eax
@@ -114,7 +116,7 @@ enable_a20:
     ret
 
 ; Messages
-boot_msg db 'FemboyKernel v1.0', 13, 10, 0
+boot_msg db 'FemboyOS v0.0.1', 13, 10, 0
 loading_msg db 'Loading...', 13, 10, 0
 mode_msg db 'Mode OK', 13, 10, 0
 disk_error_msg db 'Disk error!', 13, 10, 0
@@ -163,49 +165,17 @@ protected_mode:
     mov fs, ax
     mov gs, ax
 
-    ; Write debug marker - reached 32-bit mode
-    mov word [0xB8000 + 160], 0x0F32  ; '2' in white on red
+    ; Write success marker
+    mov word [0xB8000 + 160], 0x0F33  ; '3' - reached 32-bit
 
-    ; Copy kernel from 0x8000 to 0x100000
-    mov esi, 0x8000         ; Source: where we loaded the kernel
-    mov edi, 0x100000       ; Destination: where kernel expects to be
-    mov ecx, 64 * 512 / 4   ; Copy 64 sectors (32KB) in dwords
-    rep movsd
+    ; Debug: check what's at 0x8000
+    mov eax, [0x8000]       ; Read first 4 bytes of kernel
+    mov [0xB8000 + 164], ax  ; Display low 16 bits as characters
+    shr eax, 16
+    mov [0xB8000 + 166], ax  ; Display high 16 bits as characters
 
-    ; Write debug marker - kernel copied
-    mov word [0xB8000 + 162], 0x0F43  ; 'C' in white on red
-
-    ; Set up paging for long mode
-    call setup_paging
-
-    ; Write debug marker - paging set up
-    mov word [0xB8000 + 164], 0x0F50  ; 'P' in white on red
-
-    ; Load 64-bit GDT
-    lgdt [gdt64_descriptor]
-
-    ; Write debug marker - GDT loaded
-    mov word [0xB8000 + 166], 0x0F47  ; 'G' in white on red
-
-    ; Enable long mode
-    mov ecx, 0xC0000080     ; EFER MSR
-    rdmsr
-    or eax, 1 << 8          ; Set LM bit
-    wrmsr
-
-    ; Write debug marker - long mode enabled
-    mov word [0xB8000 + 168], 0x0F4C  ; 'L' in white on red
-
-    ; Enable paging
-    mov eax, cr0
-    or eax, 1 << 31
-    mov cr0, eax
-
-    ; Write debug marker - about to jump to 64-bit
-    mov word [0xB8000 + 170], 0x0F4A  ; 'J' in white on red
-
-    ; Jump to 64-bit code
-    jmp CODE64_SEG:long_mode
+    ; Jump to separate kernel at 0x8000
+    jmp 0x8000
 
 setup_paging:
     ; Clear page tables
@@ -275,8 +245,8 @@ long_mode:
     mov gs, ax
     mov ss, ax
 
-    ; Jump to kernel
-    jmp 0x100000
+    ; Jump to kernel at 0x8000
+    jmp 0x8000
 
 ; Pad to 510 bytes and add boot signature
 times 510-($-$$) db 0
