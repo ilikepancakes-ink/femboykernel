@@ -2,6 +2,7 @@
 
 # Tools
 ASM = nasm
+CC = /mingw64/bin/gcc
 LD = /mingw64/bin/ld.exe
 QEMU = qemu-system-x86_64
 
@@ -12,19 +13,23 @@ DRIVERS_DIR = drivers
 INCLUDE_DIR = include
 SCRIPTS_DIR = scripts
 BUILD_DIR = build
+GUI_DIR = gui
 
 # Flags
-ASM_FLAGS = -f elf64
+ASM_FLAGS = -f elf32
+CC_FLAGS = -m32 -ffreestanding -fno-stack-protector -fno-builtin -nostdlib -nostdinc -Wall -Wextra
 LD_FLAGS = -T $(SCRIPTS_DIR)/kernel.ld
 
 # Source files
 BOOT_SOURCES = $(BOOT_DIR)/boot.asm
 KERNEL_SOURCES = $(KERNEL_DIR)/main.asm
+GUI_ASM_SOURCES = $(GUI_DIR)/gui.asm
 
 # Object files
 KERNEL_OBJECTS = $(patsubst %.asm,$(BUILD_DIR)/%.o,$(notdir $(KERNEL_SOURCES)))
+GUI_ASM_OBJECTS = $(patsubst %.asm,$(BUILD_DIR)/%.o,$(notdir $(GUI_ASM_SOURCES)))
 
-ALL_OBJECTS = $(KERNEL_OBJECTS)
+ALL_OBJECTS = $(KERNEL_OBJECTS) $(GUI_ASM_OBJECTS)
 
 # Targets
 .PHONY: all clean run debug
@@ -69,8 +74,12 @@ $(BUILD_DIR)/vga.o: $(DRIVERS_DIR)/vga.asm | $(BUILD_DIR)
 $(BUILD_DIR)/gdt.o: $(BOOT_DIR)/gdt.asm | $(BUILD_DIR)
 	$(ASM) $(ASM_FLAGS) -o $@ $<
 
-# Create raw kernel binary (no linking)
-$(BUILD_DIR)/kernel.bin: $(KERNEL_DIR)/main.asm | $(BUILD_DIR)
+# GUI Assembly objects
+$(BUILD_DIR)/gui.o: $(GUI_DIR)/gui.asm | $(BUILD_DIR)
+	$(ASM) $(ASM_FLAGS) -o $@ $<
+
+# Create kernel binary (includes GUI)
+$(BUILD_DIR)/kernel.bin: $(KERNEL_DIR)/main.asm $(GUI_DIR)/gui.asm | $(BUILD_DIR)
 	nasm -f bin -o $@ $<
 
 # Create disk image

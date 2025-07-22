@@ -1,4 +1,4 @@
-; FemboyKernel Main Entry Point
+; FemboyOS Main Entry Point
 ; 32-bit kernel with command line interface
 
 [BITS 32]
@@ -10,15 +10,8 @@ VGA_WIDTH equ 80
 VGA_HEIGHT equ 25
 VGA_COLOR equ 0x0F  ; White on black
 
-; Variables
-cursor_x dd 0
-cursor_y dd 0
-input_buffer times 256 db 0
-input_pos dd 0
-
 ; Simple filesystem (much smaller)
 MAX_FILES equ 4
-file_count dd 0
 
 _start:
     ; Kernel entry point
@@ -236,9 +229,15 @@ wait_for_key:
 
 ; Convert scancode to ASCII (simplified mapping)
 scancode_to_ascii:
-    ; Only handle key releases (bit 7 clear)
+    ; Check for key release (bit 7 set)
     test al, 0x80
-    jnz .invalid
+    jnz .key_release
+
+    ; Key press - check for shift keys first
+    cmp al, 0x2A        ; Left Shift press
+    je .left_shift_press
+    cmp al, 0x36        ; Right Shift press
+    je .right_shift_press
 
     ; Simple scancode to ASCII mapping
     cmp al, 0x1C        ; Enter
@@ -336,6 +335,37 @@ scancode_to_ascii:
     cmp al, 0x28        ; Apostrophe (')
     je .apostrophe
 
+.key_release:
+    ; Handle key releases
+    and al, 0x7F        ; Remove release bit
+    cmp al, 0x2A        ; Left Shift release
+    je .left_shift_release
+    cmp al, 0x36        ; Right Shift release
+    je .right_shift_release
+    ; Ignore other key releases
+    mov al, 0
+    ret
+
+.left_shift_press:
+    mov byte [shift_pressed], 1
+    mov al, 0
+    ret
+
+.right_shift_press:
+    mov byte [shift_pressed], 1
+    mov al, 0
+    ret
+
+.left_shift_release:
+    mov byte [shift_pressed], 0
+    mov al, 0
+    ret
+
+.right_shift_release:
+    mov byte [shift_pressed], 0
+    mov al, 0
+    ret
+
 .invalid:
     mov al, 0
     ret
@@ -349,57 +379,161 @@ scancode_to_ascii:
 .space:
     mov al, 32
     ret
-.a: mov al, 'a'
+.a: cmp byte [shift_pressed], 1
+    je .A_upper
+    mov al, 'a'
     ret
-.b: mov al, 'b'
+.A_upper: mov al, 'A'
     ret
-.c: mov al, 'c'
+.b: cmp byte [shift_pressed], 1
+    je .B_upper
+    mov al, 'b'
     ret
-.d: mov al, 'd'
+.B_upper: mov al, 'B'
     ret
-.e: mov al, 'e'
+.c: cmp byte [shift_pressed], 1
+    je .C_upper
+    mov al, 'c'
     ret
-.f: mov al, 'f'
+.C_upper: mov al, 'C'
     ret
-.g: mov al, 'g'
+.d: cmp byte [shift_pressed], 1
+    je .D_upper
+    mov al, 'd'
     ret
-.h: mov al, 'h'
+.D_upper: mov al, 'D'
     ret
-.i: mov al, 'i'
+.e: cmp byte [shift_pressed], 1
+    je .E_upper
+    mov al, 'e'
     ret
-.j: mov al, 'j'
+.E_upper: mov al, 'E'
     ret
-.k: mov al, 'k'
+.f: cmp byte [shift_pressed], 1
+    je .F_upper
+    mov al, 'f'
     ret
-.l: mov al, 'l'
+.F_upper: mov al, 'F'
     ret
-.m: mov al, 'm'
+.g: cmp byte [shift_pressed], 1
+    je .G_upper
+    mov al, 'g'
     ret
-.n: mov al, 'n'
+.G_upper: mov al, 'G'
     ret
-.o: mov al, 'o'
+.h: cmp byte [shift_pressed], 1
+    je .H_upper
+    mov al, 'h'
     ret
-.p: mov al, 'p'
+.H_upper: mov al, 'H'
     ret
-.q: mov al, 'q'
+.i: cmp byte [shift_pressed], 1
+    je .I_upper
+    mov al, 'i'
     ret
-.r: mov al, 'r'
+.I_upper: mov al, 'I'
     ret
-.s: mov al, 's'
+.j: cmp byte [shift_pressed], 1
+    je .J_upper
+    mov al, 'j'
     ret
-.t: mov al, 't'
+.J_upper: mov al, 'J'
     ret
-.u: mov al, 'u'
+.k: cmp byte [shift_pressed], 1
+    je .K_upper
+    mov al, 'k'
     ret
-.v: mov al, 'v'
+.K_upper: mov al, 'K'
     ret
-.w: mov al, 'w'
+.l: cmp byte [shift_pressed], 1
+    je .L_upper
+    mov al, 'l'
     ret
-.x: mov al, 'x'
+.L_upper: mov al, 'L'
     ret
-.y: mov al, 'y'
+.m: cmp byte [shift_pressed], 1
+    je .M_upper
+    mov al, 'm'
     ret
-.z: mov al, 'z'
+.M_upper: mov al, 'M'
+    ret
+.n: cmp byte [shift_pressed], 1
+    je .N_upper
+    mov al, 'n'
+    ret
+.N_upper: mov al, 'N'
+    ret
+.o: cmp byte [shift_pressed], 1
+    je .O_upper
+    mov al, 'o'
+    ret
+.O_upper: mov al, 'O'
+    ret
+.p: cmp byte [shift_pressed], 1
+    je .P_upper
+    mov al, 'p'
+    ret
+.P_upper: mov al, 'P'
+    ret
+.q: cmp byte [shift_pressed], 1
+    je .Q_upper
+    mov al, 'q'
+    ret
+.Q_upper: mov al, 'Q'
+    ret
+.r: cmp byte [shift_pressed], 1
+    je .R_upper
+    mov al, 'r'
+    ret
+.R_upper: mov al, 'R'
+    ret
+.s: cmp byte [shift_pressed], 1
+    je .S_upper
+    mov al, 's'
+    ret
+.S_upper: mov al, 'S'
+    ret
+.t: cmp byte [shift_pressed], 1
+    je .T_upper
+    mov al, 't'
+    ret
+.T_upper: mov al, 'T'
+    ret
+.u: cmp byte [shift_pressed], 1
+    je .U_upper
+    mov al, 'u'
+    ret
+.U_upper: mov al, 'U'
+    ret
+.v: cmp byte [shift_pressed], 1
+    je .V_upper
+    mov al, 'v'
+    ret
+.V_upper: mov al, 'V'
+    ret
+.w: cmp byte [shift_pressed], 1
+    je .W_upper
+    mov al, 'w'
+    ret
+.W_upper: mov al, 'W'
+    ret
+.x: cmp byte [shift_pressed], 1
+    je .X_upper
+    mov al, 'x'
+    ret
+.X_upper: mov al, 'X'
+    ret
+.y: cmp byte [shift_pressed], 1
+    je .Y_upper
+    mov al, 'y'
+    ret
+.Y_upper: mov al, 'Y'
+    ret
+.z: cmp byte [shift_pressed], 1
+    je .Z_upper
+    mov al, 'z'
+    ret
+.Z_upper: mov al, 'Z'
     ret
 
 ; Numbers
@@ -584,6 +718,20 @@ process_command:
     test eax, eax
     jz .write_cmd
 
+    ; Check for "setupGUI" command
+    mov esi, input_buffer
+    mov edi, cmd_setupgui
+    call strcmp
+    test eax, eax
+    jz .setupgui_cmd
+
+    ; Check for "GUI" command
+    mov esi, input_buffer
+    mov edi, cmd_gui
+    call strcmp
+    test eax, eax
+    jz .gui_cmd
+
     ; Unknown command
     mov esi, unknown_msg
     call print_string
@@ -668,6 +816,14 @@ process_command:
 
 .write_cmd:
     call write_file
+    jmp .done
+
+.setupgui_cmd:
+    call setup_gui_mode
+    jmp .done
+
+.gui_cmd:
+    call start_gui_mode
     jmp .done
 
 .done:
@@ -1073,8 +1229,8 @@ make_directory:
 welcome_msg db 'FemboyOS - V0.0.1', 0
 prompt_msg db 'root@femboyOS> ', 0
 unknown_msg db 'Unknown command. Type "help" for available commands.', 0
-help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 0
-version_msg db 'FemboyKernel version 1.0 - 32-bit operating system', 0
+help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 10, '  GUI - Start graphical interface', 10, '  setupGUI - Configure GUI mode', 0
+version_msg db 'FemboyOS version 1.0 - 32-bit operating system', 0
 cmd_help db 'help', 0
 cmd_clear db 'clear', 0
 cmd_version db 'version', 0
@@ -1095,6 +1251,8 @@ cmd_cat db 'cat', 0
 cmd_rm db 'rm', 0
 cmd_mkdir db 'mkdir', 0
 cmd_write db 'write', 0
+cmd_setupgui db 'setupGUI', 0
+cmd_gui db 'GUI', 0
 
 ; Disk listing strings
 listdisk_header db 'Available Storage Devices:', 0
@@ -1114,8 +1272,8 @@ sysinfo_logo1 db '    ___               _                ', 0
 sysinfo_logo2 db '   / __\___ _ __ ___ | |__   ___  _   _ ', 0
 sysinfo_logo3 db '  / _\/ _ \ "_ ` _ \| "_ \ / _ \| | | |', 0
 sysinfo_logo4 db ' / / |  __/ | | | | | |_) | (_) | |_| |', 0
-sysinfo_os db 'OS: FemboyKernel 1.0', 0
-sysinfo_kernel db 'Kernel: 32-bit monolithic kernel', 0
+sysinfo_os db 'OS: FemboyOS V0.0.1', 0
+sysinfo_kernel db 'Kernel: FemboyKernel V0.0.1 - 32-bit monolithic kernel', 0
 sysinfo_arch db 'Architecture: x86 (i386)', 0
 sysinfo_cpu db 'CPU: Intel/AMD x86 compatible', 0
 sysinfo_memory db 'Memory: ', 0
@@ -1142,4 +1300,114 @@ file_written_msg db 'File written (simulated).', 0
 cat_demo_msg db 'This is demo file content. Real filesystem coming soon!', 0
 rm_not_implemented db 'rm command not yet implemented.', 0
 mkdir_not_implemented db 'mkdir command not yet implemented.', 0
+
+; GUI setup messages
+gui_setup_msg db 'Setting up GUI mode...', 0
+gui_setup_complete db 'GUI mode configured. Starting GUI...', 0
+gui_reboot_msg db 'Starting FemboyOS Desktop Environment...', 0
+gui_starting_msg db 'Loading FemboyOS Desktop Environment...', 0
+gui_exit_message db 'Exited GUI mode. Welcome back to CLI!', 0
+simple_gui_title db '=== FemboyOS Desktop Environment ===', 0
+simple_gui_msg1 db 'Welcome to the FemboyOS GUI!', 0
+simple_gui_msg2 db 'This is a simple text-based desktop.', 0
+simple_gui_exit db 'Returning to CLI in 3 seconds...', 0
+
+; Setup GUI mode function
+setup_gui_mode:
+    pusha
+
+    ; Print setup message
+    mov esi, gui_setup_msg
+    call print_string
+    call newline
+
+    ; Set GUI mode flag
+    mov dword [gui_mode_flag], 1
+
+    ; Print completion message
+    mov esi, gui_setup_complete
+    call print_string
+    call newline
+
+    ; Print reboot message
+    mov esi, gui_reboot_msg
+    call print_string
+    call newline
+    call newline
+
+    ; Wait a moment
+    mov ecx, 50000000
+.wait_loop:
+    dec ecx
+    jnz .wait_loop
+
+    ; Call the GUI demo and stay in GUI mode
+    call call_gui_demo
+
+    ; After GUI exits, clear screen and return to CLI
+    call clear_screen
+    mov esi, gui_exit_message
+    call print_string
+    call newline
+
+    popa
+    ret
+
+; Start GUI mode directly (simple GUI command)
+start_gui_mode:
+    pusha
+
+    ; Print starting message
+    mov esi, gui_starting_msg
+    call print_string
+    call newline
+
+    ; Test: Just clear screen and draw simple GUI without calling complex functions
+    call clear_screen
+
+    ; Draw simple desktop manually
+    mov esi, simple_gui_title
+    call print_string
+    call newline
+    call newline
+
+    mov esi, simple_gui_msg1
+    call print_string
+    call newline
+
+    mov esi, simple_gui_msg2
+    call print_string
+    call newline
+    call newline
+
+    mov esi, simple_gui_exit
+    call print_string
+    call newline
+
+    ; Simple delay (3 seconds)
+    mov ecx, 100000000
+.wait_loop:
+    dec ecx
+    jnz .wait_loop
+
+    ; Return to CLI
+    call clear_screen
+    mov esi, gui_exit_message
+    call print_string
+    call newline
+
+    popa
+    ret
+
+; Include GUI system
+%include "gui/gui.asm"
+
+; Variables
+cursor_x dd 0
+cursor_y dd 0
+input_buffer times 256 db 0
+input_pos dd 0
+file_count dd 0
+gui_mode_flag dd 0  ; 0 = CLI mode, 1 = GUI mode
+shift_pressed db 0  ; 0 = not pressed, 1 = pressed
 
