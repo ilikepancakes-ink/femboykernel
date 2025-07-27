@@ -2,8 +2,8 @@
 
 ## Sections
 
-- [Build](Build.md) - how to build Wind/Tempest
+- [Build](Build.md) - how to build FemboyOS/FemboyKernel
 - [Progress](Progress.md) - progress report
 
-> [!WARNING]
+> [!TIP]
 > If you want to understand the system, read the code.

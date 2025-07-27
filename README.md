@@ -1,37 +1,18 @@
 # FemboyOS 
 
+<div align="center">
+  <!-- Badges -->
+  <p>
+    <a href="https://github.com/ilikepancakes/femboykernel/">
+      <img src="https://img.shields.io/github/languages/top/ilikepancakes-ink/femboykernel?logo=pastebin&label=" alt="Most used language">
+    </a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache-blue.svg" alt="License: Apache 2.0"></a>
+    <a href="docs/Main.md"><img src="https://img.shields.io/badge/docs-available-brightgreen.svg" alt="Docs"></a>
+    <img src="https://img.shields.io/badge/platform-x86__64-lightgrey.svg" alt="Platform: x86_64">
+  </p>
+</div>
+
 A OS written from scratch in x86 ASM with advanced hardware management and diagnostic capabilities.
-
-## Project Structure
-
-```
-femboykernel/
-├── boot/           # Bootloader code
-│   ├── boot.asm    # Main bootloader
-│   └── gdt.asm     # GDT setup
-├── kernel/         # Kernel source code
-│   ├── main.asm    # Kernel entry point
-│   ├── memory.asm  # Memory management
-│   ├── interrupts.asm # Interrupt handlers
-│   ├── pci.asm     # PCI bus functions
-│   ├── ahci.asm    # SATA/AHCI driver
-│   ├── smart.asm   # SMART monitoring
-│   ├── ramtest.asm # RAM testing functions
-│   ├── cpu.asm     # CPU information
-│   ├── thermal.asm # Temperature monitoring
-│   └── cli.asm     # Command interface
-├── drivers/        # Hardware drivers
-│   ├── vga.asm     # VGA text output
-│   └── keyboard.asm # Keyboard input
-├── include/        # Assembly include files
-│   ├── constants.inc # System constants
-│   ├── macros.inc   # Useful macros
-│   └── structs.inc  # Data structures
-├── build/          # Build output
-└── scripts/        # Build scripts
-    ├── Makefile    # Build system
-    └── kernel.ld   # Linker script
-```
 
 ## Docs
 
