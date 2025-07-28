@@ -19,7 +19,8 @@ femboykernel/
 │   ├── ramtest.asm # RAM testing functions
 │   ├── cpu.asm     # CPU information
 │   ├── thermal.asm # Temperature monitoring
-│   └── cli.asm     # Command interface
+│   ├── cli.asm     # Command interface
+│   └── linker.ld   # Linker script
 ├── drivers/        # Hardware drivers
 │   ├── vga.asm     # VGA text output
 │   └── keyboard.asm # Keyboard input
@@ -27,8 +28,5 @@ femboykernel/
 │   ├── constants.inc # System constants
 │   ├── macros.inc   # Useful macros
 │   └── structs.inc  # Data structures
-├── build/          # Build output
-└── scripts/        # Build scripts
-    ├── Makefile    # Build system
-    └── kernel.ld   # Linker script
+└── build/          # Build output
 ```

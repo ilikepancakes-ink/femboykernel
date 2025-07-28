@@ -1229,7 +1229,7 @@ make_directory:
 welcome_msg db 'FemboyOS - V0.0.1', 0
 prompt_msg db 'root@femboyOS> ', 0
 unknown_msg db 'Unknown command. Type "help" for available commands.', 0
-help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 10, '  GUI - Start graphical interface', 10, '  setupGUI - Configure GUI mode', 0
+help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 10, '  gui - Start graphical interface', 10, '  setupgui - Configure GUI mode', 0
 version_msg db 'FemboyOS version 1.0 - 32-bit operating system', 0
 cmd_help db 'help', 0
 cmd_clear db 'clear', 0
@@ -1251,8 +1251,8 @@ cmd_cat db 'cat', 0
 cmd_rm db 'rm', 0
 cmd_mkdir db 'mkdir', 0
 cmd_write db 'write', 0
-cmd_setupgui db 'setupGUI', 0
-cmd_gui db 'GUI', 0
+cmd_setupgui db 'setupgui', 0
+cmd_gui db 'gui', 0
 
 ; Disk listing strings
 listdisk_header db 'Available Storage Devices:', 0

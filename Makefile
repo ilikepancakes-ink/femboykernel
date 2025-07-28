@@ -11,14 +11,13 @@ BOOT_DIR = boot
 KERNEL_DIR = kernel
 DRIVERS_DIR = drivers
 INCLUDE_DIR = include
-SCRIPTS_DIR = scripts
 BUILD_DIR = build
 GUI_DIR = gui
 
 # Flags
-ASM_FLAGS = -f elf32
-CC_FLAGS = -m32 -ffreestanding -fno-stack-protector -fno-builtin -nostdlib -nostdinc -Wall -Wextra
-LD_FLAGS = -T $(SCRIPTS_DIR)/kernel.ld
+ASM_FLAGS = -f elf64
+CC_FLAGS = -m64 -ffreestanding -fno-stack-protector -fno-builtin -nostdlib -nostdinc -Wall -Wextra -Wno-unused-command-line-argumentc -Wall -Wextra -Wpedantic -Wconversion -Werror                  -ffunction-sections -fdata-sections -Wundef -Wshadow
+LD_FLAGS = -T $(KERNEL_DIR)/linker.ld
 
 # Source files
 BOOT_SOURCES = $(BOOT_DIR)/boot.asm

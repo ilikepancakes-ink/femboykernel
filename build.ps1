@@ -79,7 +79,7 @@ try {
         "build\gdt.o"
     )
     
-    & ld -T scripts\kernel.ld -o build\kernel.bin $objects
+    & ld -T kernel\linker.ld -o build\kernel.bin $objects
     if ($LASTEXITCODE -ne 0) { throw "Kernel linking failed" }
 
     Write-Host "Creating disk image..." -ForegroundColor Cyan

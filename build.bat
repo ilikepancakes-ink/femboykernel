@@ -41,7 +41,7 @@ nasm -f elf64 -o build\gdt.o boot\gdt.asm
 if errorlevel 1 goto error
 
 echo Linking kernel...
-ld -T scripts\kernel.ld -o build\kernel.bin build\main.o build\memory.o build\interrupts.o build\pci.o build\ramtest.o build\cpu.o build\cli.o build\ahci.o build\vga.o build\gdt.o
+ld -T kernel\linker.ld -o build\kernel.bin build\main.o build\memory.o build\interrupts.o build\pci.o build\ramtest.o build\cpu.o build\cli.o build\ahci.o build\vga.o build\gdt.o
 if errorlevel 1 goto error
 
 echo Creating disk image...
