@@ -1,5 +1,3 @@
-/* Linker script for FemboyKernel */
-
 ENTRY(_start)
 
 SECTIONS
