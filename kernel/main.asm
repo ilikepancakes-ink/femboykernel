@@ -1055,22 +1055,149 @@ print_working_directory:
     popa
     ret
 
-; Show current date (simulated)
+; Show current date
 show_date:
     pusha
-    mov esi, date_msg
+
+    ; Read year (assume 2000s)
+    mov al, 0x09
+    call cmos_read
+    call bcd_to_bin
+    movzx eax, al
+    add eax, 2000     ; Add 2000 for 21st century
+    push eax          ; Save full year
+
+    ; Read month
+    mov al, 0x08
+    call cmos_read
+    call bcd_to_bin
+    movzx eax, al
+    push eax          ; Save month
+
+    ; Read day
+    mov al, 0x07
+    call cmos_read
+    call bcd_to_bin
+    movzx eax, al
+    push eax          ; Save day
+
+    ; Print "Date: "
+    mov esi, date_prefix
     call print_string
+
+    ; Print month
+    pop eax
+    call print_number
+
+    mov al, '/'
+    call print_char
+
+    ; Print day
+    pop eax
+    call print_number
+
+    mov al, '/'
+    call print_char
+
+    ; Print year
+    pop eax
+    call print_number
+
     call newline
+
     popa
     ret
 
-; Show current time (simulated)
+; Show current time
 show_time:
     pusha
-    mov esi, time_msg
+
+    ; Read seconds
+    mov al, 0x00
+    call cmos_read
+    call bcd_to_bin
+    push eax          ; Save seconds
+
+    ; Read minutes
+    mov al, 0x02
+    call cmos_read
+    call bcd_to_bin
+    push eax          ; Save minutes
+
+    ; Read hours
+    mov al, 0x04
+    call cmos_read
+    call bcd_to_bin
+    push eax          ; Save hours
+
+    ; Print "Time: "
+    mov esi, time_prefix
     call print_string
+
+    ; Print hours
+    pop eax
+    call print_number
+
+    mov al, ':'
+    call print_char
+
+    ; Print minutes (with leading zero if necessary)
+    pop eax  ; minutes
+    push eax ; save for later
+    cmp al, 10
+    jl .leading_zero_min
+    call print_number
+    add esp, 4  ; remove saved
+    jmp .print_sec
+
+.leading_zero_min:
+    mov al, '0'
+    call print_char
+    pop eax
+    call print_number
+
+.print_sec:
+    mov al, ':'
+    call print_char
+
+    ; Print seconds
+    pop eax  ; seconds
+    cmp al, 10
+    jl .leading_zero_sec
+    call print_number
+    jmp .done
+
+.leading_zero_sec:
+    mov al, '0'
+    call print_char
+    call print_number
+
+.done:
     call newline
+
     popa
+    ret
+
+; Read from CMOS
+; AL = index, returns AL = value
+cmos_read:
+    push dx
+    out 0x70, al       ; Write index to CMOS address port
+    in al, 0x71        ; Read data from CMOS data port
+    pop dx
+    ret
+
+; Convert BCD to binary
+; AL = BCD value, returns AL = binary
+bcd_to_bin:
+    push bx
+    mov bl, al
+    and bl, 0x0F      ; Lower digit
+    shr al, 4         ; Higher digit
+    mov bh, 10
+    mul bh            ; AH = 0, AL = higher*10
+    add al, bl        ; AL = higher*10 + lower
+    pop bx
     ret
 
 ; Show system uptime
@@ -1226,8 +1353,8 @@ make_directory:
     ret
 
 ; String data
-welcome_msg db 'FemboyOS - V0.0.1', 0
-prompt_msg db 'root@femboyOS> ', 0
+welcome_msg db 'FemboyOS - V0.0.5', 0
+prompt_msg db 'host@femboyOS> ', 0
 unknown_msg db 'Unknown command. Type "help" for available commands.', 0
 help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 10, '  GUI - Start graphical interface', 10, '  setupGUI - Configure GUI mode', 0
 version_msg db 'FemboyOS version 1.0 - 32-bit operating system', 0
@@ -1273,7 +1400,7 @@ sysinfo_logo2 db '   / __\___ _ __ ___ | |__   ___  _   _ ', 0
 sysinfo_logo3 db '  / _\/ _ \ "_ ` _ \| "_ \ / _ \| | | |', 0
 sysinfo_logo4 db ' / / |  __/ | | | | | |_) | (_) | |_| |', 0
 sysinfo_os db 'OS: FemboyOS V0.0.1', 0
-sysinfo_kernel db 'Kernel: FemboyKernel V0.0.1 - 32-bit monolithic kernel', 0
+sysinfo_kernel db 'Kernel: FemboyKernel V0.0.5 - 32-bit monolithic kernel', 0
 sysinfo_arch db 'Architecture: x86 (i386)', 0
 sysinfo_cpu db 'CPU: Intel/AMD x86 compatible', 0
 sysinfo_memory db 'Memory: ', 0
@@ -1288,7 +1415,9 @@ total_files_msg db 'Total: ', 0
 files_found_suffix db ' files', 0
 pwd_msg db '/root', 0
 date_msg db 'Date: 2025-01-22 (simulated)', 0
+date_prefix db 'Date: ', 0
 time_msg db 'Time: 12:00:00 UTC (simulated)', 0
+time_prefix db 'Time: ', 0
 uptime_msg db 'System uptime: 0 days, 0 hours, 0 minutes', 0
 whoami_msg db 'root', 0
 reboot_msg db 'Rebooting system...', 0
@@ -1410,4 +1539,3 @@ input_pos dd 0
 file_count dd 0
 gui_mode_flag dd 0  ; 0 = CLI mode, 1 = GUI mode
 shift_pressed db 0  ; 0 = not pressed, 1 = pressed
-

@@ -25,9 +25,9 @@ start:
     ; Load kernel from disk (simplified - loads 64 sectors)
     mov si, loading_msg
     call print_string
-    
+
     mov ah, 0x02        ; Read sectors
-    mov al, 8           ; Number of sectors to read (4KB should be enough)
+    mov al, 20          ; Number of sectors to read (10KB should be enough)
     mov ch, 0           ; Cylinder
     mov cl, 2           ; Starting sector (sector 1 is boot sector)
     mov dh, 0           ; Head
