@@ -1,9 +1,6 @@
 ; FemboyOS Main Entry Point
 ; 32-bit kernel with command line interface
 
-[BITS 32]
-[ORG 0x8000]
-
 ; Constants
 VGA_MEMORY equ 0xB8000
 VGA_WIDTH equ 80
@@ -1470,8 +1467,8 @@ setup_gui_mode:
     dec ecx
     jnz .wait_loop
 
-    ; Call the GUI demo and stay in GUI mode
-    call call_gui_demo
+    ; Initialize C compositor
+    ; call compositor_init
 
     ; After GUI exits, clear screen and return to CLI
     call clear_screen
@@ -1482,7 +1479,7 @@ setup_gui_mode:
     popa
     ret
 
-; Start GUI mode directly (simple GUI command)
+; Start GUI mode directly (call C compositor)
 start_gui_mode:
     pusha
 
@@ -1491,30 +1488,19 @@ start_gui_mode:
     call print_string
     call newline
 
-    ; Test: Just clear screen and draw simple GUI without calling complex functions
-    call clear_screen
-
-    ; Draw simple desktop manually
-    mov esi, simple_gui_title
-    call print_string
-    call newline
-    call newline
-
-    mov esi, simple_gui_msg1
+    ; Simple test: print before C call
+    mov esi, before_c_msg
     call print_string
     call newline
 
-    mov esi, simple_gui_msg2
-    call print_string
-    call newline
-    call newline
+    ; Initialize C compositor
+    call compositor_init
 
-    mov esi, simple_gui_exit
-    call print_string
-    call newline
+    ; Simple demo: call render a few times
+    ; call compositor_render
 
-    ; Simple delay (3 seconds)
-    mov ecx, 100000000
+    ; Simple delay (shorter for testing)
+    mov ecx, 20000000
 .wait_loop:
     dec ecx
     jnz .wait_loop
@@ -1528,8 +1514,9 @@ start_gui_mode:
     popa
     ret
 
-; Include GUI system
-%include "gui/gui.asm"
+before_c_msg db 'Before C call...', 0
+
+
 
 ; Variables
 cursor_x dd 0
@@ -1539,3 +1526,31 @@ input_pos dd 0
 file_count dd 0
 gui_mode_flag dd 0  ; 0 = CLI mode, 1 = GUI mode
 shift_pressed db 0  ; 0 = not pressed, 1 = pressed
+
+; C compositor functions (declared extern)
+; extern compositor_init
+; extern compositor_render
+; extern compositor_handle_input
+
+; Temporary implementation: simple text-based compositor stub
+compositor_demo:
+    pusha
+
+    ; Clear screen
+    call clear_screen
+
+    ; Print demo message
+    mov esi, compositor_msg
+    call print_string
+    call newline
+
+    ; Simple delay
+    mov ecx, 100000000
+.delay_loop:
+    dec ecx
+    jnz .delay_loop
+
+    popa
+    ret
+
+compositor_msg db 'C-based Compositor: Under Construction...', 0
