@@ -39,8 +39,15 @@ _start:
     call newline
     call newline
 
+    ; Debug: print that we reached command loop
+    mov esi, debug_msg
+    call print_string
+    call newline
+
     ; Start command loop
     jmp command_loop
+
+debug_msg db 'Reached command loop initialization', 0
 
 ; Clear the entire screen
 clear_screen:

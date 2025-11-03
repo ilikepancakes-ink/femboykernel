@@ -3,6 +3,10 @@
 
 [BITS 32]
 
+; Global symbols exported by this module
+global network_init
+global network_command
+
 ; External functions and variables from main.asm
 extern input_buffer
 extern strcmp

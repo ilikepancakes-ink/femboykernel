@@ -1,5 +1,5 @@
 ; FemboyKernel Bootloader
-; Transitions from 16-bit real mode to 64-bit long mode
+; Transitions from 16-bit real mode to 32-bit protected mode
 ; and loads the kernel
 
 [BITS 16]
@@ -55,7 +55,7 @@ start:
     mov cr0, eax
 
     ; Jump to 32-bit code
-    jmp CODE_SEG:protected_mode
+    jmp 0x08:protected_mode
 
 disk_error:
     mov si, disk_error_msg
@@ -152,8 +152,8 @@ gdt_descriptor:
     dd gdt_start
 
 ; Constants
-CODE_SEG equ gdt_code - gdt_start
-DATA_SEG equ gdt_data - gdt_start
+CODE_SEG equ 0x08
+DATA_SEG equ 0x10
 
 [BITS 32]
 protected_mode:
@@ -168,32 +168,26 @@ protected_mode:
     ; Write success marker
     mov word [0xB8000 + 160], 0x0F33  ; '3' - reached 32-bit
 
-    ; Debug: check what's at 0x8000
-    mov eax, [0x8000]       ; Read first 4 bytes of kernel
-    mov [0xB8000 + 164], ax  ; Display low 16 bits as characters
-    shr eax, 16
-    mov [0xB8000 + 166], ax  ; Display high 16 bits as characters
-
-    ; Jump to separate kernel at 0x8000
+    ; Jump to kernel at 0x8000
     jmp 0x8000
 
-setup_paging:
+setup_page_tables:
     ; Clear page tables
     mov edi, 0x70000
     mov ecx, 0x10000 / 4
     xor eax, eax
     rep stosd
-    
+
     ; Set up page tables (identity mapping first 2MB)
     mov edi, 0x70000        ; PML4
     mov dword [edi], 0x71003 ; Point to PDPT
-    
+
     mov edi, 0x71000        ; PDPT
     mov dword [edi], 0x72003 ; Point to PD
-    
+
     mov edi, 0x72000        ; PD
     mov dword [edi], 0x73003 ; Point to PT
-    
+
     mov edi, 0x73000        ; PT
     mov eax, 0x003          ; Present, writable
     mov ecx, 512
@@ -201,15 +195,6 @@ setup_paging:
     stosd
     add eax, 0x1000
     loop .loop
-    
-    ; Load CR3
-    mov eax, 0x70000
-    mov cr3, eax
-    
-    ; Enable PAE
-    mov eax, cr4
-    or eax, 1 << 5
-    mov cr4, eax
     ret
 
 ; 64-bit GDT
@@ -228,8 +213,8 @@ gdt64_descriptor:
     dw gdt64_end - gdt64_start - 1
     dd gdt64_start
 
-CODE64_SEG equ gdt64_code - gdt64_start
-DATA64_SEG equ gdt64_data - gdt64_start
+CODE64_SEG equ 0x08
+DATA64_SEG equ 0x10
 
 
 
@@ -237,13 +222,7 @@ DATA64_SEG equ gdt64_data - gdt64_start
 
 [BITS 64]
 long_mode:
-    ; Set up 64-bit segments
-    mov ax, DATA64_SEG
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+    ; 64-bit segments are ignored except FS/GS
 
     ; Jump to kernel at 0x8000
     jmp 0x8000
