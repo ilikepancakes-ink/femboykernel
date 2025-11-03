@@ -31,7 +31,7 @@ C_SOURCES = $(wildcard $(GUI_DIR)/*.c)
 KERNEL_OBJECTS = $(patsubst %.asm,$(BUILD_DIR)/%.o,$(notdir $(KERNEL_SOURCES)))
 C_OBJECTS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(C_SOURCES)))
 
-ALL_OBJECTS = $(KERNEL_OBJECTS) $(C_OBJECTS)
+ALL_OBJECTS = $(KERNEL_OBJECTS) $(C_OBJECTS) build/network.o
 
 # Compile C files
 $(BUILD_DIR)/%.o: $(GUI_DIR)/%.c | $(BUILD_DIR)
@@ -52,6 +52,9 @@ $(BUILD_DIR)/boot.bin: $(BOOT_SOURCES) | $(BUILD_DIR)
 
 # Kernel objects
 $(BUILD_DIR)/main.o: $(KERNEL_DIR)/main.asm | $(BUILD_DIR)
+	$(ASM) $(ASM_FLAGS) -o $@ $<
+
+$(BUILD_DIR)/network.o: $(KERNEL_DIR)/network.asm | $(BUILD_DIR)
 	$(ASM) $(ASM_FLAGS) -o $@ $<
 
 $(BUILD_DIR)/memory.o: $(KERNEL_DIR)/memory.asm | $(BUILD_DIR)

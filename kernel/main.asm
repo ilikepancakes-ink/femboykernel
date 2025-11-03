@@ -1,5 +1,16 @@
 ; FemboyOS Main Entry Point
 ; 32-bit kernel with command line interface
+extern compositor_init
+extern network_init
+extern network_command
+
+; Global symbols for network module
+global input_buffer
+global strcmp
+global print_string
+global newline
+global print_char
+global print_number
 
 ; Constants
 VGA_MEMORY equ 0xB8000
@@ -18,6 +29,9 @@ _start:
 
     ; Initialize simple filesystem
     mov dword [file_count], 2  ; Start with 2 default files
+
+    ; Initialize network stack
+    call network_init
 
     ; Print welcome message
     mov esi, welcome_msg
@@ -729,6 +743,13 @@ process_command:
     test eax, eax
     jz .gui_cmd
 
+    ; Check for "network" command
+    mov esi, input_buffer
+    mov edi, cmd_network
+    call strcmp
+    test eax, eax
+    jz .network_cmd
+
     ; Unknown command
     mov esi, unknown_msg
     call print_string
@@ -821,6 +842,10 @@ process_command:
 
 .gui_cmd:
     call start_gui_mode
+    jmp .done
+
+.network_cmd:
+    call network_command
     jmp .done
 
 .done:
@@ -1353,7 +1378,7 @@ make_directory:
 welcome_msg db 'FemboyOS - V0.0.5', 0
 prompt_msg db 'host@femboyOS> ', 0
 unknown_msg db 'Unknown command. Type "help" for available commands.', 0
-help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 10, '  GUI - Start graphical interface', 10, '  setupGUI - Configure GUI mode', 0
+help_msg db 'Available commands:', 10, '  help, clear, version, sysinfo, listdisk', 10, '  ls/dir, pwd, date, time, uptime, whoami', 10, '  echo [text], reboot, shutdown', 10, '  touch [file], cat [file], write [file] [content]', 10, '  network [status|dhcp|devices] - Network management', 10, '  GUI - Start graphical interface', 10, '  setupGUI - Configure GUI mode', 0
 version_msg db 'FemboyOS version 1.0 - 32-bit operating system', 0
 cmd_help db 'help', 0
 cmd_clear db 'clear', 0
@@ -1377,6 +1402,7 @@ cmd_mkdir db 'mkdir', 0
 cmd_write db 'write', 0
 cmd_setupgui db 'setupGUI', 0
 cmd_gui db 'GUI', 0
+cmd_network db 'network', 0
 
 ; Disk listing strings
 listdisk_header db 'Available Storage Devices:', 0
